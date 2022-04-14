@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/tasks")
+@CrossOrigin("*")
+@RequestMapping("/v1/task")
 @RequiredArgsConstructor
 public class TaskController {
     private final DbService service;
