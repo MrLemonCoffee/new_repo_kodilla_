@@ -11,24 +11,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-
 @Component
 @RequiredArgsConstructor
 public class TrelloClient {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TrelloClient.class);
-
     private final RestTemplate restTemplate;
     private final TrelloConfig trelloConfig;
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(TrelloClient.class);
     public List<TrelloBoardDto> getTrelloBoards() {
         URI url = UriComponentsBuilder.fromHttpUrl(trelloConfig.getTrelloApiEndpoint() + "/members/" + trelloConfig.getTrelloUsername() + "/boards")
                 .queryParam("key", trelloConfig.getTrelloAppKey())
@@ -38,7 +29,6 @@ public class TrelloClient {
                 .build()
                 .encode()
                 .toUri();
-
         try {
             TrelloBoardDto[] boardsResponse = restTemplate.getForObject(url, TrelloBoardDto[].class);
             return Optional.ofNullable(boardsResponse)
@@ -64,6 +54,7 @@ public class TrelloClient {
                 .build()
                 .encode()
                 .toUri();
+
 
         return restTemplate.postForObject(url, null, CreatedTrelloCardDto.class);
     }
