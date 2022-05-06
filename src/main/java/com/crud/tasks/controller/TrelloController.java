@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
+@RequestMapping("/v1/trello")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/trello")
+
 public class TrelloController
 {
     private final TrelloFacade trelloFacade;
