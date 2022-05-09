@@ -10,10 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("/v1/trello")
 @RestController
 @RequiredArgsConstructor
-
+@RequestMapping("/v1/trello")
 public class TrelloController
 {
     private final TrelloFacade trelloFacade;
@@ -22,6 +21,7 @@ public class TrelloController
     public List<TrelloBoardDto> getTrelloBoards() {
         return trelloFacade.fetchTrelloBoards();
     }
+
 
     @PostMapping("/cards")
     public CreatedTrelloCardDto createTrelloCard(@RequestBody TrelloCardDto trelloCardDto) {

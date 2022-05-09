@@ -1,4 +1,5 @@
 package com.crud.tasks.service;
+
 import com.crud.tasks.domain.Mail;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -20,11 +22,15 @@ public class SimpleEmailService {
 
     private final MailCreatorService mailCreatorService;
 
-    public void send(final Mail mail) {
+    public void send(final Mail mail, final String emailTemplate) {
         log.info("Starting email preparation...");
         try {
-            //SimpleMailMessage mailMessage = createMailMessage(mail);
-            javaMailSender.send(createMimeMessage(mail));
+            if (emailTemplate == null || emailTemplate.equals("")) {
+                javaMailSender.send(createMailMessage(mail));
+            }
+            else {
+                javaMailSender.send(createMimeMessage(mail, emailTemplate));
+            }
             log.info("Email has been sent");
         }
         catch (MailException e) {
@@ -32,12 +38,12 @@ public class SimpleEmailService {
         }
     }
 
-    private MimeMessagePreparator createMimeMessage(final Mail mail) {
+    private MimeMessagePreparator createMimeMessage(final Mail mail, final String emailTemplate) {
         return mimeMessage -> {
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
             messageHelper.setTo(mail.getMailTo());
             messageHelper.setSubject(mail.getSubject());
-            messageHelper.setText(mailCreatorService.buildTrelloCardEmail(mail.getMessage()), true);
+            messageHelper.setText(mailCreatorService.buildEmailUsingTemplate(mail.getMessage(), emailTemplate), true);
         };
     }
 
@@ -47,6 +53,7 @@ public class SimpleEmailService {
         mailMessage.setSubject(mail.getSubject());
         mailMessage.setText(mail.getMessage());
         Optional.ofNullable(mail.getToCc()).ifPresent(mailMessage::setCc);
+
         return mailMessage;
     }
 }

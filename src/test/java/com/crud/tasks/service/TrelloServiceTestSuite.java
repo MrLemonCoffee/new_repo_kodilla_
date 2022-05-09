@@ -10,83 +10,58 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.Collections;
+
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TrelloServiceTestSuite {
+public class TrelloServiceTestSuite {
 
     @InjectMocks
-    private TrelloService trelloService;
+    private TrelloService service;
 
     @Mock
-    private TrelloClient trelloClient;
+    private TrelloClient client;
+
     @Mock
     private SimpleEmailService emailService;
+
     @Mock
-    private AdminConfig adminConfig;
+    private AdminConfig config;
 
     @Test
-    void fetchTrelloBoardsShouldReturnEmptyList() {
+    void shouldFetchTrelloBoards() {
         //Given
-        when(trelloClient.getTrelloBoards()).thenReturn(Collections.emptyList());
+        List<TrelloBoardDto> boardList = new ArrayList<>();
+        boardList.add(new TrelloBoardDto("1234", "Name", new ArrayList<>()));
+        boardList.add(new TrelloBoardDto("3214", "Name2", new ArrayList<>()));
+
+        when(client.getTrelloBoards()).thenReturn(boardList);
 
         //When
-        List<TrelloBoardDto> result = trelloService.fetchTrelloBoards();
+        List<TrelloBoardDto> boardDtos = service.fetchTrelloBoards();
 
         //Then
-        assertEquals(0, result.size());
+        assertEquals(2, boardDtos.size());
+        assertEquals("Name", boardDtos.get(0).getName());
     }
 
     @Test
-    void fetchTrelloBoardsShouldReturnList() {
+    void shouldCreateTrelloCard() {
         //Given
-        List<TrelloBoardDto> trelloBoardDtos = List.of(new TrelloBoardDto(), new TrelloBoardDto());
-        when(trelloClient.getTrelloBoards()).thenReturn(trelloBoardDtos);
+        TrelloCardDto card = new TrelloCardDto("Name", "Desc", "top", "12345");
+
+        when(client.createNewCard(card)).thenReturn(new CreatedTrelloCardDto("ID", "NAME", "URL"));
 
         //When
-        List<TrelloBoardDto> result = trelloService.fetchTrelloBoards();
+        CreatedTrelloCardDto cardDto = service.createTrelloCard(card);
 
         //Then
-        assertEquals(2, result.size());
-    }
-
-    @Test
-    void failedCreateTrelloCardShouldNotSendEmail() {
-        //Given
-        TrelloCardDto trelloCardDto = new TrelloCardDto("test", "desc", "pos", "123");
-        when(trelloClient.createNewCard(trelloCardDto)).thenReturn(null);
-
-        //When
-        CreatedTrelloCardDto result = trelloService.createTrelloCard(trelloCardDto);
-
-        //Then
-        assertNull(result);
-        verify(emailService, times(0)).send(any());
-    }
-
-    @Test
-    void successfulCreateTrelloCardShouldSendEmail() {
-        //Given
-        TrelloCardDto trelloCardDto = new TrelloCardDto("test", "desc", "pos", "123");
-        CreatedTrelloCardDto createdTrelloCardDto = new CreatedTrelloCardDto("123", "test", "url");
-        when(trelloClient.createNewCard(trelloCardDto)).thenReturn(createdTrelloCardDto);
-        when(adminConfig.getAdminMail()).thenReturn("mail");
-
-        //When
-        CreatedTrelloCardDto result = trelloService.createTrelloCard(trelloCardDto);
-
-        //Then
-        assertNotNull(result);
-        verify(emailService, times(1)).send(any());
+        assertEquals("NAME", cardDto.getName());
     }
 }
